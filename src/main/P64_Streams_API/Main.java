@@ -77,71 +77,26 @@ public class Main {
         assert salaries.get(salary1.getTo()).equals(Arrays.asList(1)) : "wrong salaries mailbox content (1)";
         assert salaries.get(salary2.getTo()).equals(Arrays.asList(Integer.MAX_VALUE)) : "wrong salaries mailbox content (2)";
         assert salaries.get(randomTo).equals(Arrays.asList(randomSalary)) : "wrong salaries mailbox content (3)";
-
     }
 
     // ANSWER - BEGIN
-    public static class ABSSomeThing <T> {
+    public static abstract class ASend<T> {
         String from;
         String to;
         T content;
 
-        public String getFrom() {
-            return from;
-        }
-
-        public String getTo() {
-            return to;
-        }
-
-        public void setTo(String to) {
-            this.to = to;
-        }
-
-        public T getContent() {
-            return content;
-        }
-
-        public void setContent(T content) {
-            this.content = content;
-        }
-
-        public void setFrom(String from) {
-            this.from = from;
-        }
+        public abstract String getFrom();
+        public abstract String getTo();
+        public abstract T getContent();
     }
 
-    public static class MailMessage extends ABSSomeThing<String> {
-
-        @Override
-        public String getFrom() {
-            return from;
-        }
-
-        @Override
-        public void setFrom(String from) {
-            this.from = from;
-        }
-
-        @Override
-        public String getTo() {
-            return to;
-        }
-
-        @Override
-        public void setTo(String to) {
-            this.to = to;
-        }
-
-        @Override
-        public String getContent() {
-            return content;
-        }
-
-        @Override
-        public void setContent(String content) {
-            this.content = content;
-        }
+    public static class MailMessage extends ASend<String> {
+        @Override public String getFrom() { return from; }
+        @Override public String getTo() { return to; }
+        @Override public String getContent() { return content; }
+        void setFrom(String from) { this.from = from; }
+        void setTo(String to) { this.to = to; }
+        void setContent(String content) { this.content = content; }
 
         public MailMessage(String from, String to, String content) {
             setFrom(from);
@@ -149,89 +104,50 @@ public class Main {
             setContent(content);
         }
     }
-    //=========================================
-    public static class Salary {
-        String from;
-        String to;
-        Integer salary;
 
-        public String getFrom() {
-            return from;
-        }
+    public static class Salary extends ASend<Integer> {
+        @Override public String getFrom() { return from; }
+        @Override public String getTo() { return to; }
+        @Override public Integer getContent() { return content; }
+        void setFrom(String from) { this.from = from; }
+        void setTo(String to) { this.to = to; }
+        void setContent(Integer content) { this.content = content; }
 
-        public String getTo() {
-            return to;
-        }
-
-        public void setTo(String to) {
-            this.to = to;
-        }
-
-        public Integer getSalary() {
-            return salary;
-        }
-
-        public void setSalary(Integer salary) {
-            this.salary = salary;
-        }
-
-        public void setFrom(String from) {
-            this.from = from;
-        }
-
-        public Salary(String fromCompany, String toEmployee, Integer salary) {
-            setFrom(fromCompany);
-            setTo(toEmployee);
-            setSalary(salary);
-        }
-    }
-    //=========================================
-    public static class MailService <T> implements Consumer<ABSSomeThing> {
-        String from;
-        String to;
-        T t;
-
-        public String getFrom() {
-            return from;
-        }
-
-        public void setFrom(String from) {
-            this.from = from;
-        }
-
-        public String getTo() {
-            return to;
-        }
-
-        public void setTo(String to) {
-            this.to = to;
-        }
-
-        public T getT() {
-            return t;
-        }
-
-        public void setT(Object t) {
-            this.t = (T)t;
-        }
-
-        public <T> MailService(String from, String to, T t) {
+        public Salary(String from, String to, Integer content) {
             setFrom(from);
             setTo(to);
-            setT(t);
+            setContent(content);
+        }
+    }
+
+    public static class MailService <T> implements Consumer<ASend<T>> {
+        private static class MyHashMap<K,V> extends HashMap<K,V> {
+            @Override
+            public V get(Object K) {
+                V var = super.get(K);
+                if (var == null) {
+                    return (V) Collections.emptyList();
+                } else {
+                    return var;
+                }
+            }
         }
 
-        public MailService() {
+        Map<String, List<T>> SendList;
+
+        public MailService() { SendList = new MyHashMap<>(); }
+
+        @Override public void accept(ASend s) {
+            if (SendList.containsKey(s.getTo())) {
+                SendList.get(s.getTo()).add((T)s.getContent());
+            } else {
+                SendList.put(s.getTo(), new ArrayList<>());
+                this.accept(s);
+            }
         }
 
-        public Map<String, List<T>> getMailBox() {
-            return new HashMap<String, List<T>>();
-        }
+        public Map<String, List<T>> getMailBox() { return SendList; }
 
-        @Override
-        public void accept(ABSSomeThing s) {
-            System.out.println(s);
-        }
     }
     // ANSWER - END
 }
