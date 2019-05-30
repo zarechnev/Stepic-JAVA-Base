@@ -81,17 +81,13 @@ public class Main {
     }
 
     // ANSWER - BEGIN
-    public static class MailMessage {
+    public static class ABSSomeThing <T> {
         String from;
         String to;
-        String content;
+        T content;
 
         public String getFrom() {
             return from;
-        }
-
-        public void setFrom(String from) {
-            this.from = from;
         }
 
         public String getTo() {
@@ -102,10 +98,47 @@ public class Main {
             this.to = to;
         }
 
+        public T getContent() {
+            return content;
+        }
+
+        public void setContent(T content) {
+            this.content = content;
+        }
+
+        public void setFrom(String from) {
+            this.from = from;
+        }
+    }
+
+    public static class MailMessage extends ABSSomeThing<String> {
+
+        @Override
+        public String getFrom() {
+            return from;
+        }
+
+        @Override
+        public void setFrom(String from) {
+            this.from = from;
+        }
+
+        @Override
+        public String getTo() {
+            return to;
+        }
+
+        @Override
+        public void setTo(String to) {
+            this.to = to;
+        }
+
+        @Override
         public String getContent() {
             return content;
         }
 
+        @Override
         public void setContent(String content) {
             this.content = content;
         }
@@ -153,7 +186,7 @@ public class Main {
         }
     }
     //=========================================
-    public static class MailService <T> implements Consumer<> {
+    public static class MailService <T> implements Consumer<ABSSomeThing> {
         String from;
         String to;
         T t;
@@ -196,7 +229,7 @@ public class Main {
         }
 
         @Override
-        public void accept(Salary s) {
+        public void accept(ABSSomeThing s) {
             System.out.println(s);
         }
     }
